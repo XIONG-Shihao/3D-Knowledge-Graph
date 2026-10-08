@@ -1,0 +1,22 @@
+[Unit]
+Description=Atlas knowledge workspace
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@ROOT@
+EnvironmentFile=@ROOT@/deploy/atlas.env
+Environment=PYTHONUNBUFFERED=1
+Environment=ATLAS_ENV_FILE=@ROOT@/deploy/atlas.env
+ExecStart=@ROOT@/.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

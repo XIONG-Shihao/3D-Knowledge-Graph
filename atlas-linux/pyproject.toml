@@ -1,0 +1,27 @@
+[project]
+name = "atlas-knowledge"
+version = "0.1.0"
+description = "A local knowledge workspace with document search and evidence-backed graphs."
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "httpx>=0.28,<1",
+  "python-multipart>=0.0.20,<1",
+  "pypdf>=6,<7",
+  "python-docx>=1.2,<2",
+  "python-dotenv>=1,<2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.12,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]

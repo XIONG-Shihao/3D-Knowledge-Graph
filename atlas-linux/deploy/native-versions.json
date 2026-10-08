@@ -1,0 +1,17 @@
+{
+  "target": "Ubuntu 24.04 x86_64",
+  "ragflow_version": "v0.22.1",
+  "ragflow_commit": "cfdccebb178bc2c49eacf321e5da483ed1e48511",
+  "ragflow_python": "3.12",
+  "elasticsearch_version": "8.11.3",
+  "minio_version": "RELEASE.2025-06-13T11-33-47Z",
+  "minio_commit": "f9a7aa4461a72ea45ea699086c2b47b8072819c9",
+  "uv_version": "0.12.3",
+  "model_revisions": {
+    "InfiniFlow/deepdoc": "9c7aa2c730d7a242d7f04cf6109a6a239aefc717",
+    "InfiniFlow/huqie": "c70b9e5fec4a8eb447f71556b4b7f5f0e6bb11e4",
+    "InfiniFlow/text_concat_xgb_v1.0": "722ed09a54f23f14fe0279ce6b74ce18e1960f54"
+  },
+  "libssl_compat_sha256": "09ee28588a1fb5613ddc6c26a992d5a76931b3cf22c022930da413a5e580599e",
+  "node_version": "22.21.1"
+}

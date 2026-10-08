@@ -18,13 +18,43 @@ Project documents: [Product specification](docs/PRODUCT.md) · [Architecture](do
 
 The 3D proposal changes presentation rather than knowledge extraction. Screen-facing labels address text orientation; crowded labels still require visibility priorities and collision handling. Basic 3D can reuse the existing graph data and source references without a new graph database.
 
-**Run it:**
+## Run from GitHub on Linux
+
+This repository contains the full Atlas source: `backend/`, `frontend/`, `tests/`, `run.sh`, Node build files, dependency locks and deployment documentation. Compiled frontend assets in `dist/` are also tracked so Linux can run Atlas without building the interface first. Local data, credentials, virtual environments, `node_modules` and release archives are excluded.
+
+On Ubuntu 24.04 x86_64, with Git and Python 3.12+ available:
 
 ```bash
-./run.sh
+sudo apt-get update
+sudo apt-get install -y git python3 python3-venv
+git clone git@github.com:XIONG-Shihao/3D-Knowledge-Graph.git
+cd 3D-Knowledge-Graph
+bash scripts/install-linux.sh
+bash scripts/start-linux.sh
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 20.19+ or 22.12+. The first launch installs dependencies and seeds five fictional sample documents. API documentation is available at [/docs](http://127.0.0.1:8000/docs).
+SSH cloning requires your Linux machine to have a GitHub-authorized SSH key. HTTPS cloning is an alternative: `git clone https://github.com/XIONG-Shihao/3D-Knowledge-Graph.git`.
+
+The Linux scripts use **`deploy/atlas.env`**. Stop the foreground process before installing the systemd service or restarting it after configuration changes. For later source updates, use `git pull --ff-only`, rerun `bash scripts/install-linux.sh` to update Python dependencies, then restart Atlas. Edit frontend code and rebuild with the development commands below when needed.
+
+## Run an existing Linux release ZIP
+
+The ZIP is a deployment package: it contains Python backend source, the compiled frontend in `dist/`, examples, documentation and native deployment scripts. It is **not the full development repository**. It omits `run.sh`, `frontend/`, `tests/`, `package.json`, `package-lock.json`, and the TypeScript/Vite build configuration. The same applies to the `.tar.gz` release.
+
+From the extracted `atlas-linux` directory on Ubuntu 24.04 x86_64:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv
+bash scripts/install-linux.sh
+bash scripts/start-linux.sh
+```
+
+The installer creates a Linux `.venv`, installs hashed runtime dependencies and creates `deploy/atlas.env` if it is absent. The startup script uses that environment file and the compiled frontend. Atlas needs Python 3.12+; Node.js and `uv` are not needed to run this release. The separate native RAGFlow installer manages its own build dependencies.
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) on the Linux host, or use the SSH tunnel in [the Linux guide](deploy/LINUX.md) from your Mac. An empty database is seeded with five fictional sample documents unless `KB_SEED_DEMO=false` is set before first startup. API documentation is available at [/docs](http://127.0.0.1:8000/docs).
+
+For automatic startup, stop the foreground process and run `sudo bash scripts/install-service.sh "$(id -un)"` as the Linux user who owns the installation. The guide covers ZIP extraction, service logs, RAGFlow and data migration.
 
 ## What you can do
 
@@ -67,11 +97,9 @@ The interface defaults to Simplified Chinese. Use the **English / 中文** butto
 
 RAGFlow is a separate service. For the complete native Linux deployment requested here, follow [deploy/LINUX.md](deploy/LINUX.md). Its installer prepares the pinned Python service chain and its dependencies. You still need to configure embedding/chat models and create your own RAGFlow API key. Existing or hosted servers can be connected using the same adapter.
 
-```bash
-cp .env.example .env
-```
+For the Linux release, run `scripts/install-linux.sh` first, then edit **`deploy/atlas.env`**. Both `scripts/start-linux.sh` and the installed systemd service explicitly load that file. Editing `.env` will not configure those startup paths.
 
-Set these values in `.env`, then restart Atlas:
+For a full development checkout started with `run.sh` or the development commands below, copy `.env.example` to `.env` and edit `.env` instead. Set these values in the environment file used by your startup path, then restart Atlas:
 
 ```dotenv
 RAGFLOW_BASE_URL=http://localhost:9380
@@ -128,11 +156,15 @@ Browser / TypeScript / Cytoscape
    Normalized nodes + edges + source references
 ```
 
-`backend/main.py` owns application endpoints; `knowledge.py` owns local parsing, topic grouping, ranking, and graph normalization; `ragflow.py` owns the remote API adapter. `frontend/main.ts` provides the document library, search, graph explorer, and evidence inspector.
+`backend/main.py` owns application endpoints; `knowledge.py` owns local parsing, topic grouping, ranking, and graph normalization; `ragflow.py` owns the remote API adapter. In the full source repository, `frontend/main.ts` provides the document library, search, graph explorer, and evidence inspector. The release contains its compiled output in `dist/`, not the TypeScript source.
 
-Data is stored in `data/knowledge.sqlite3` and `data/files/`. To back up, stop the app and copy the entire `data/` directory. `.env`, data, dependencies, and build output are excluded from Git. Use `KB_SEED_DEMO=false` before a first launch to start empty, and `KB_DATA_DIR` for a different storage directory.
+Data is stored in `data/knowledge.sqlite3` and `data/files/`. To back up, stop the app and copy the entire `data/` directory. Credentials, data and installed dependencies are excluded from Git; the compiled `dist/` frontend is tracked for Linux startup. Use `KB_SEED_DEMO=false` before a first launch to start empty, and `KB_DATA_DIR` for a different storage directory.
 
 ## Development and verification
+
+**Full development repository only.** These commands require the omitted frontend sources, Node project files and tests; they cannot be run from the deployment ZIP. To edit/rebuild the interface or run the test suite, use the full source checkout.
+
+Development requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 20.19+ or 22.12+. In that checkout, `./run.sh` installs dependencies, builds the frontend and starts Atlas using `.env`. For separate development servers and checks:
 
 ```bash
 uv sync --frozen
@@ -149,6 +181,8 @@ npm run build
 ```
 
 Tests cover ingestion → chunks → topics → graph → search → deletion; workspace scoping; persistence; malformed graph/file inputs; DOCX tables; scanned PDF failures; Chinese keyword search; and a mocked RAGFlow HTTP contract. A live RAGFlow server is needed to verify deployment-specific model configuration and API compatibility.
+
+`scripts/build-linux-release.sh` is included for reference, but rebuilding releases also requires the full development checkout. To check a deployed runtime, use `/api/health` and the document/RAGFlow acceptance steps in [the Linux guide](deploy/LINUX.md).
 
 ## MVP limits
 

@@ -29,6 +29,8 @@ Atlas SQLite and RAGFlow MySQL have different responsibilities. Installing RAGFl
 
 ## 2. Code organization
 
+The table describes the full development repository. The Linux ZIP / `.tar.gz` includes backend source and compiled `dist/` assets, but omits `frontend/`, `tests/`, `run.sh` and Node build files. Frontend paths below identify source modules; they are not files supplied in the deployment package. Start that package with `scripts/install-linux.sh` followed by `scripts/start-linux.sh`, using `deploy/atlas.env`.
+
 | Component | Responsibility |
 |---|---|
 | [backend/main.py](../backend/main.py) | FastAPI routes, upload/background processing, sync, source scoping, static frontend serving |
@@ -36,9 +38,9 @@ Atlas SQLite and RAGFlow MySQL have different responsibilities. Installing RAGFl
 | [backend/store.py](../backend/store.py) | SQLite schema, persistence, local original files |
 | [backend/knowledge.py](../backend/knowledge.py) | Local extraction, chunking, topics, lexical ranking, graph construction and normalization |
 | [backend/ragflow.py](../backend/ragflow.py) | Remote dataset/document/retrieval calls and optional legacy graph calls through `httpx` |
-| [frontend/main.ts](../frontend/main.ts) | Document library, search, graph explorer, source inspector, API calls |
-| [frontend/i18n.ts](../frontend/i18n.ts), [zh-CN.json](../frontend/zh-CN.json) | Interface translation and language preference |
-| [frontend/highlight.ts](../frontend/highlight.ts) | Search-term highlighting, including Chinese terms |
+| `frontend/main.ts` (development checkout only) | Document library, search, graph explorer, source inspector, API calls |
+| `frontend/i18n.ts`, `frontend/zh-CN.json` (development checkout only) | Interface translation and language preference |
+| `frontend/highlight.ts` (development checkout only) | Search-term highlighting, including Chinese terms |
 | [scripts/](../scripts/) and [deploy/](../deploy/) | Native installation, systemd setup, migration, release packaging and deployment checks |
 
 The frontend is built with Vite. FastAPI serves `dist/index.html` and its assets in the release. The Atlas Linux runtime therefore does not need Node.js. Development uses the Vite server with an API proxy.
@@ -180,6 +182,6 @@ The Linux service explicitly selects `deploy/atlas.env` through `ATLAS_ENV_FILE`
 
 [Migration scripts](../scripts/migrate-data.sh) create a SQLite backup and bundle original files. Stop the source app to keep files consistent. Restore refuses to overwrite existing target data. Runtime environments and credentials are excluded. A backup of Atlas does not back up RAGFlow's databases, index, object storage or account keys; those need separate migration.
 
-The existing automated suite covers local ingestion, graph normalization, source scoping, retrieval, persistence, Chinese matching, deployment configuration and mocked RAGFlow contracts. Frontend checks cover language/highlighting behavior. These checks do not establish a successful native Linux install or compatibility with every live RAGFlow version.
+The existing automated suite, available in the full development checkout rather than the release, covers local ingestion, graph normalization, source scoping, retrieval, persistence, Chinese matching, deployment configuration and mocked RAGFlow contracts. Frontend checks cover language/highlighting behavior. These checks do not establish a successful native Linux install or compatibility with every live RAGFlow version. The packaged build script also requires the full checkout; its presence in the release does not make the release rebuildable.
 
 Before a shared deployment, add authentication and document permissions enforced in all API and retrieval paths. Replace in-process upload work with durable jobs, make sync incremental, and measure search/graph performance against larger real collections. Optional 3D belongs in the presentation layer and should follow successful source/evidence workflows.

@@ -6,9 +6,41 @@
 
 ## 1. 把发布包上传到 Linux
 
-Mac 上已生成 `releases/atlas-linux-0.1.0.tar.gz`，包含编译后的界面、Python 依赖锁、原生服务脚本和示例文档。不包含 `.env`、你的文档数据、Mac 的 `.venv` 或 `node_modules`。
+### 推荐：从 GitHub 获取完整源码
 
-在 Mac 终端执行（把 `user` 和 `SERVER_IP` 替换成实际值）：
+GitHub 仓库现在包含完整源码、测试、构建文件和编译后的 `dist/`。在 Ubuntu 24.04 x86-64 执行：
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git python3 python3-venv
+git clone git@github.com:XIONG-Shihao/3D-Knowledge-Graph.git
+cd 3D-Knowledge-Graph
+bash scripts/install-linux.sh
+bash scripts/start-linux.sh
+```
+
+SSH 克隆需要 Linux 上有 GitHub 授权的 SSH 密钥。也可使用 HTTPS：`git clone https://github.com/XIONG-Shihao/3D-Knowledge-Graph.git`。此启动方式使用 **`deploy/atlas.env`**，无需 Node.js 或 `uv` 来运行 Atlas。`run.sh` 是源码开发启动方式，需要 `uv` 和 Node.js，并使用 `.env`；不要混用两种配置文件。
+
+后续更新：先执行 `git pull --ff-only`，再执行 `bash scripts/install-linux.sh` 更新 Python 依赖，最后重启 Atlas。已有 Linux 部署的 `data/` 和 `deploy/atlas.env` 不在 Git 中，需单独保留；从旧 ZIP 迁移时可使用第 5 节备份/恢复流程。下文的服务、SSH 隧道和 RAGFlow 安装步骤同样适用于源码克隆目录。
+
+### 可选：使用已有 ZIP / tar.gz 发布包
+
+Mac 上已生成 `releases/atlas-linux-0.1.0.tar.gz` 和内容相同的 `releases/atlas-linux-0.1.0.zip`，包含 Python 后端源码、编译后的界面、Python 依赖锁、原生服务脚本、文档和示例。它们是部署包，不是完整开发源码；不包含 `run.sh`、`frontend/`、`tests/` 或 Node 构建文件，也不包含 `.env`、你的文档数据、Mac 的 `.venv` 或 `node_modules`。
+
+部署包使用 `scripts/install-linux.sh` → `scripts/start-linux.sh`，配置文件是 **`deploy/atlas.env`**。README 中的开发命令只适用于完整源码目录。
+
+如果拿到的是 ZIP，上传 ZIP 及其 `.sha256` 文件，在 Linux 上先安装 `unzip`，然后执行：
+
+```bash
+sudo apt-get update
+sudo apt-get install -y unzip
+sha256sum -c atlas-linux-0.1.0.zip.sha256
+unzip atlas-linux-0.1.0.zip
+```
+
+解压后进入 `atlas-linux`，执行下文相同的 Python 安装和启动命令。无需再解压 tar.gz。ZIP 和 tar.gz 二选一即可；不要覆盖已有 `data/` 或配置来排查启动问题。
+
+以下以 tar.gz 为例。在 Mac 终端执行（把 `user` 和 `SERVER_IP` 替换成实际值）：
 
 ```bash
 scp releases/atlas-linux-0.1.0.tar.gz releases/atlas-linux-0.1.0.tar.gz.sha256 user@SERVER_IP:~/
